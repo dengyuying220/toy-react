@@ -22,18 +22,37 @@ export class Component {
     }
 
     rerender() {
-        this._range.deleteContents();
-        this[RENDER_TO_DOM](this._range);
-    }
+        let oldRange = this._range;
+
+        let range = document.createRange();
+        range.setStart(oldRange.startContainer, oldRange.startOffset);
+        range.setEnd(oldRange.startContainer, oldRange.startOffset);
+        this[RENDER_TO_DOM](range);
+    
+        oldRange.setStart(range.endContainer, range.endOffset);
+        oldRange.deleteContents();
+    }   
 
     setState(newState) {
-        if(this.state === null || typeof this.state !== "object") {
+        if (this.state === null || typeof this.state !== "object") {
             this.state = newState;
             this.rerender();
             return;
         }
-        let merge = 
-    }    
+
+        let merge = (oldState, newState) => {
+            for (let p in newState) {
+                if (oldState[p] === null || typeof oldState[p] !== "object") {
+                    oldState[p] = newState[p];
+                } else {
+                    merge(oldState[p], newState[p]);
+                }
+            }
+        }
+
+        merge(this.state, newState);
+        this.rerender();
+    }
 
     /* get root() {
         if (!this._root) {
@@ -49,10 +68,17 @@ export class ElementWrapper {
     }
 
     setAttribute(name, value) {
-        if(name.match(/^on([\s\S]+)$/)) {
+        if (name.match(/^on([\s\S]+)$/)) {
             this.root.addEventListener(RegExp.$1.replace(/^[\s\S]/, c => c.toLowerCase()), value);
+        } else {
+            if(name === "className") {
+                this.root.setAttribute("class", value)
+            } else {
+                this.root.setAttribute(name, value)
+            }
+            
         }
-        this.root.setAttribute(name, value)
+        
     }
 
     appendChild(component) {
@@ -94,6 +120,9 @@ export function createElement(type, attributes, ...children) {
     }
     let insertChildren = (children) => {
         for (let child of children) {
+            if (child === null) {
+                continue;
+            }
             if (typeof child === 'string') {
                 child = new TextWrapper(child);
                 // e.appendChild(child);
@@ -110,4 +139,10 @@ export function createElement(type, attributes, ...children) {
     return e;
 }
 
-export function render(component, paren
+export function render(component, parentElement) {
+    let range = document.createRange();
+    range.setStart(parentElement, 0);
+    range.setEnd(parentElement, parentElement.childNodes.length);
+    range.deleteContents();
+    component[RENDER_TO_DOM](range);
+}
