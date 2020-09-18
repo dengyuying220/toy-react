@@ -16,6 +16,11 @@ export class Component {
         this.children.push(component);
     }
 
+    get vdom() {
+        // console.log(this);
+        return this.render().vdom;
+    }
+
     [RENDER_TO_DOM](range) {
         this._range = range;
         this.render()[RENDER_TO_DOM](range);
@@ -53,21 +58,16 @@ export class Component {
         merge(this.state, newState);
         this.rerender();
     }
-
-    /* get root() {
-        if (!this._root) {
-            this._root = this.render().root;
-        }
-        return this._root;
-    } */
 }
 
-export class ElementWrapper {
+export class ElementWrapper extends Component {
     constructor(type) {
+        super(type);
+        this.type = type;
         this.root = document.createElement(type);
     }
 
-    setAttribute(name, value) {
+    /* setAttribute(name, value) {
         if (name.match(/^on([\s\S]+)$/)) {
             this.root.addEventListener(RegExp.$1.replace(/^[\s\S]/, c => c.toLowerCase()), value);
         } else {
@@ -87,6 +87,15 @@ export class ElementWrapper {
         range.setEnd(this.root, this.root.childNodes.length);
         range.deleteContents();
         component[RENDER_TO_DOM](range);
+    } */
+
+    get vdom() {
+        // console.log(this.type);
+        return {
+            type: this.type,
+            props: this.props,
+            children: this.children.map(child => child.vdom )
+        };
     }
 
     [RENDER_TO_DOM](range) {
@@ -95,9 +104,18 @@ export class ElementWrapper {
     }
 }
 
-export class TextWrapper {
+export class TextWrapper extends Component {
     constructor(content) {
+        super(content);
+        this.content = content;
         this.root = document.createTextNode(content)
+    }
+
+    get vdom () {
+        return {
+            type: "#text",
+            content: this.content
+        }
     }
 
     [RENDER_TO_DOM](range) {
