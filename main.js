@@ -127,8 +127,8 @@ class Square extends Component {
   
   // ========================================
   
-  window.game = <Game></Game>
-  console.log(game.vdom);
+/*   window.game = <Game></Game>
+  console.log(game.vdom); */
 
   render(<Game />, document.getElementById("root"));
   
