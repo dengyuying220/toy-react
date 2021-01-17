@@ -1,13 +1,13 @@
 const RENDER_TO_DOM = Symbol("render to dom");
 
 function replaceContent(range, node) {
-    range.insertNode(node);
-    range.setStartAfter(node);
-    range.deleteContents();
+  range.insertNode(node);
+  range.setStartAfter(node);
+  range.deleteContents();
 
-    range.setStartBefore(node);
-    range.setStartAfter(node);
-  }
+  range.setStartBefore(node);
+  range.setEndAfter(node);
+}
 
 export class Component {
   constructor() {
@@ -33,8 +33,6 @@ export class Component {
   /* get vchildren() {
     return this.children.map((child) => child.vdom);
   } */
-
-  
 
   [RENDER_TO_DOM](range) {
     this._range = range;
@@ -98,7 +96,7 @@ export class Component {
     };
     let vdom = this.vdom;
     update(this._vdom, this.vdom);
-    this._vdom = vdom;
+    // this._vdom = vdom;
   }
 
   setState(newState) {
