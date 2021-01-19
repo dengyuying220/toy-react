@@ -81,8 +81,15 @@ export class Component {
       }
 
       newNode._range = oldNode._range;
+
       let newChildren = newNode.vchildren;
       let oldChildren = oldNode.vchildren;
+
+      if (!newChildren || !newChildren.length) {
+        return;
+      }
+
+      let tailRange = oldChildren[oldChildren.length - 1]._range;
 
       for (let i = 0; i < newChildren.length; i++) {
         let newChild = newChildren[i];
@@ -90,13 +97,19 @@ export class Component {
         if (i < oldChildren.length) {
           update(oldChild, newChild);
         } else {
+          let range = document.createRange();
+          range.setStart(tailRange.endContainer, tailRange.endOffset);
+          range.setEnd(tailRange.endContainer, tailRange.endOffset);
+          newChild[RENDER_TO_DOM](range);
+
+          tailRange = range;
           // todo
         }
       }
     };
     let vdom = this.vdom;
-    update(this._vdom, this.vdom);
-    // this._vdom = vdom;
+    update(this._vdom, vdom);
+    this._vdom = vdom;
   }
 
   setState(newState) {
